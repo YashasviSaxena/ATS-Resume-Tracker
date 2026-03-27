@@ -1,0 +1,618 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ATS Resume Tracker - Professional Resume Matching System</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+        }
+
+            .header h1 {
+                font-size: 2.5rem;
+                margin-bottom: 10px;
+            }
+
+            .header p {
+                font-size: 1.1rem;
+                opacity: 0.9;
+            }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            transition: transform 0.3s;
+        }
+
+            .stat-card:hover {
+                transform: translateY(-5px);
+            }
+
+            .stat-card h3 {
+                font-size: 2rem;
+                color: #667eea;
+                margin-bottom: 5px;
+            }
+
+            .stat-card p {
+                color: #666;
+                font-size: 0.9rem;
+            }
+
+        .main-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+
+            .card h2 {
+                color: #333;
+                margin-bottom: 20px;
+                padding-bottom: 10px;
+                border-bottom: 2px solid #667eea;
+            }
+
+        input, textarea, select {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 15px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+
+            input:focus, textarea:focus {
+                outline: none;
+                border-color: #667eea;
+            }
+
+        textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: transform 0.2s;
+            width: 100%;
+        }
+
+            button:hover {
+                transform: translateY(-2px);
+            }
+
+        .match-result {
+            margin-top: 20px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 10px;
+        }
+
+        .score-circle {
+            width: 150px;
+            height: 150px;
+            margin: 20px auto;
+            position: relative;
+        }
+
+            .score-circle svg {
+                width: 100%;
+                height: 100%;
+                transform: rotate(-90deg);
+            }
+
+            .score-circle circle {
+                fill: none;
+                stroke-width: 10;
+            }
+
+        .score-bg {
+            stroke: #e0e0e0;
+        }
+
+        .score-progress {
+            stroke: #667eea;
+            stroke-linecap: round;
+            transition: stroke-dasharray 1s ease;
+        }
+
+        .score-text {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 2rem;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .match-level {
+            text-align: center;
+            font-size: 1.2rem;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+
+            .match-level.Excellent {
+                color: #28a745;
+            }
+
+            .match-level.Good {
+                color: #17a2b8;
+            }
+
+            .match-level.Fair {
+                color: #ffc107;
+            }
+
+            .match-level.Poor {
+                color: #dc3545;
+            }
+
+        .keywords-section {
+            margin: 15px 0;
+        }
+
+        .keywords {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 10px;
+        }
+
+        .keyword {
+            background: #e9ecef;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            color: #495057;
+        }
+
+            .keyword.missing {
+                background: #f8d7da;
+                color: #721c24;
+                border-left: 3px solid #dc3545;
+            }
+
+        .suggestion {
+            background: #d1ecf1;
+            padding: 10px;
+            margin: 8px 0;
+            border-radius: 8px;
+            color: #0c5460;
+            font-size: 14px;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 20px;
+            color: #667eea;
+        }
+
+        .list-item {
+            padding: 10px;
+            border-bottom: 1px solid #eee;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+            .list-item:hover {
+                background: #f8f9fa;
+            }
+
+            .list-item h4 {
+                color: #333;
+                margin-bottom: 5px;
+            }
+
+            .list-item p {
+                color: #666;
+                font-size: 12px;
+            }
+
+        .score-badge {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: bold;
+        }
+
+        @media (max-width: 768px) {
+            .main-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📄 ATS Resume Tracker</h1>
+            <p>Intelligent Resume Matching System with AI-Powered Analysis</p>
+        </div>
+
+        <!-- Statistics Dashboard -->
+        <div class="stats-grid" id="statsGrid">
+            <div class="stat-card">
+                <h3 id="totalResumes">0</h3>
+                <p>Total Resumes</p>
+            </div>
+            <div class="stat-card">
+                <h3 id="totalJobs">0</h3>
+                <p>Active Jobs</p>
+            </div>
+            <div class="stat-card">
+                <h3 id="avgScore">0%</h3>
+                <p>Average Match Score</p>
+            </div>
+            <div class="stat-card">
+                <h3 id="totalMatches">0</h3>
+                <p>Total Matches</p>
+            </div>
+        </div>
+
+        <div class="main-grid">
+            <!-- Upload Resume -->
+            <div class="card">
+                <h2>📤 Upload Resume</h2>
+                <input type="file" id="resumeFile" accept=".pdf,.txt">
+                <button onclick="uploadResume()">Upload Resume</button>
+                <div id="uploadResult"></div>
+            </div>
+
+            <!-- Create Job -->
+            <div class="card">
+                <h2>💼 Create Job Posting</h2>
+                <input type="text" id="jobTitle" placeholder="Job Title">
+                <textarea id="jobDesc" placeholder="Job Description (skills required, responsibilities...)"></textarea>
+                <input type="text" id="jobCompany" placeholder="Company Name">
+                <input type="text" id="jobLocation" placeholder="Location">
+                <button onclick="createJob()">Create Job</button>
+                <div id="jobResult"></div>
+            </div>
+        </div>
+
+        <!-- Match Section -->
+        <div class="card" style="margin-bottom: 30px;">
+            <h2>🎯 Match Resume with Job</h2>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                <input type="number" id="resumeId" placeholder="Resume ID">
+                <input type="number" id="jobId" placeholder="Job ID">
+            </div>
+            <button onclick="match()">Calculate Match</button>
+            <div id="matchResult"></div>
+        </div>
+
+        <!-- Resume Analyzer Section -->
+        <div class="card" style="margin-bottom: 30px;">
+            <h2>📊 Resume Quality Analyzer</h2>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                <input type="number" id="analyzeResumeId" placeholder="Resume ID">
+                <button onclick="analyzeResume()">Analyze Resume</button>
+            </div>
+            <div id="analyzeResult"></div>
+        </div>
+
+        <div class="main-grid">
+            <!-- Jobs List -->
+            <div class="card">
+                <h2>📋 Job Openings</h2>
+                <button onclick="loadJobs()" style="margin-bottom: 15px;">Refresh Jobs</button>
+                <div id="jobsList"></div>
+            </div>
+
+            <!-- Resumes List -->
+            <div class="card">
+                <h2>📄 Uploaded Resumes</h2>
+                <button onclick="loadResumes()" style="margin-bottom: 15px;">Refresh Resumes</button>
+                <div id="resumesList"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = 'http://localhost:5030';
+
+        // Load statistics on page load
+        loadStatistics();
+        loadJobs();
+        loadResumes();
+
+        // Auto-refresh every 30 seconds
+        setInterval(() => {
+            loadStatistics();
+            loadJobs();
+            loadResumes();
+        }, 30000);
+
+        async function loadStatistics() {
+            try {
+                const [resumes, jobs] = await Promise.all([
+                    fetch(`${API_URL}/api/resume`).then(r => r.json()),
+                    fetch(`${API_URL}/api/jobdescription`).then(r => r.json())
+                ]);
+
+                document.getElementById('totalResumes').innerText = resumes.length;
+                document.getElementById('totalJobs').innerText = jobs.length;
+                document.getElementById('avgScore').innerText = '0%';
+                document.getElementById('totalMatches').innerText = '0';
+            } catch (error) {
+                console.error('Error loading statistics:', error);
+            }
+        }
+
+        async function uploadResume() {
+            const file = document.getElementById('resumeFile').files[0];
+            if (!file) { alert('Select a file'); return; }
+
+            const formData = new FormData();
+            formData.append('file', file);
+
+            document.getElementById('uploadResult').innerHTML = '<div class="loading">Uploading...</div>';
+
+            try {
+                const response = await fetch(`${API_URL}/api/resume/upload`, {
+                    method: 'POST',
+                    body: formData
+                });
+                const result = await response.json();
+                document.getElementById('uploadResult').innerHTML = `
+                        <div class="match-result">
+                            ✅ Resume uploaded successfully!<br>
+                            <strong>ID:</strong> ${result.id}<br>
+                            <strong>File:</strong> ${result.fileName}<br>
+                            <strong>Extracted Text:</strong> ${result.extractedText.substring(0, 200)}...
+                        </div>
+                    `;
+                loadResumes();
+                loadStatistics();
+            } catch (error) {
+                document.getElementById('uploadResult').innerHTML = `<div class="match-result" style="color: red;">Error: ${error.message}</div>`;
+            }
+        }
+
+        async function createJob() {
+            const job = {
+                title: document.getElementById('jobTitle').value,
+                description: document.getElementById('jobDesc').value,
+                company: document.getElementById('jobCompany').value,
+                location: document.getElementById('jobLocation').value
+            };
+
+            if (!job.title || !job.description) {
+                alert('Please fill in title and description');
+                return;
+            }
+
+            document.getElementById('jobResult').innerHTML = '<div class="loading">Creating job...</div>';
+
+            try {
+                const response = await fetch(`${API_URL}/api/jobdescription`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(job)
+                });
+                const result = await response.json();
+                document.getElementById('jobResult').innerHTML = `
+                        <div class="match-result">
+                            ✅ Job created successfully!<br>
+                            <strong>ID:</strong> ${result.id}<br>
+                            <strong>Title:</strong> ${result.title}<br>
+                            <strong>Company:</strong> ${result.company}
+                        </div>
+                    `;
+                document.getElementById('jobTitle').value = '';
+                document.getElementById('jobDesc').value = '';
+                document.getElementById('jobCompany').value = '';
+                document.getElementById('jobLocation').value = '';
+                loadJobs();
+                loadStatistics();
+            } catch (error) {
+                document.getElementById('jobResult').innerHTML = `<div class="match-result" style="color: red;">Error: ${error.message}</div>`;
+            }
+        }
+
+        async function match() {
+            const resumeId = document.getElementById('resumeId').value;
+            const jobId = document.getElementById('jobId').value;
+
+            if (!resumeId || !jobId) { alert('Enter both IDs'); return; }
+
+            document.getElementById('matchResult').innerHTML = '<div class="loading">Calculating match...</div>';
+
+            try {
+                const response = await fetch(`${API_URL}/api/matching/compare`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ resumeId: parseInt(resumeId), jobId: parseInt(jobId) })
+                });
+                const result = await response.json();
+
+                const progress = (result.score / 100) * 314;
+
+                document.getElementById('matchResult').innerHTML = `
+                        <div class="match-result">
+                            <div class="score-circle">
+                                <svg viewBox="0 0 120 120">
+                                    <circle cx="60" cy="60" r="50" class="score-bg" stroke="#e0e0e0"/>
+                                    <circle cx="60" cy="60" r="50" class="score-progress" stroke="#667eea"
+                                            stroke-dasharray="${progress} 314" stroke-dashoffset="0"/>
+                                </svg>
+                                <div class="score-text">${result.score}%</div>
+                            </div>
+                            <div class="match-level ${result.matchLevel}">${result.matchLevel}</div>
+                            <div class="keywords-section">
+                                <strong>Missing Keywords:</strong>
+                                <div class="keywords">
+                                    ${result.missingKeywords.map(k => `<span class="keyword missing">${k.replace(/_/g, ' ')}</span>`).join('') || '✓ All keywords matched!'}
+                                </div>
+                            </div>
+                            <div class="keywords-section">
+                                <strong>Suggestions:</strong>
+                                ${result.suggestions.map(s => `<div class="suggestion">${s}</div>`).join('')}
+                            </div>
+                            <details>
+                                <summary>View Detailed Keywords (${result.resumeKeywords.length} total)</summary>
+                                <div class="keywords-section">
+                                    <strong>Your Keywords:</strong>
+                                    <div class="keywords">
+                                        ${result.resumeKeywords.slice(0, 30).map(k => `<span class="keyword">${k.replace(/_/g, ' ')}</span>`).join('')}
+                                    </div>
+                                </div>
+                                <div class="keywords-section">
+                                    <strong>Job Keywords:</strong>
+                                    <div class="keywords">
+                                        ${result.jobKeywords.slice(0, 30).map(k => `<span class="keyword">${k.replace(/_/g, ' ')}</span>`).join('')}
+                                    </div>
+                                </div>
+                            </details>
+                        </div>
+                    `;
+            } catch (error) {
+                document.getElementById('matchResult').innerHTML = `<div class="match-result" style="color: red;">Error: ${error.message}</div>`;
+            }
+        }
+
+        async function analyzeResume() {
+            const resumeId = document.getElementById('analyzeResumeId').value;
+            if (!resumeId) { alert('Enter Resume ID'); return; }
+
+            document.getElementById('analyzeResult').innerHTML = '<div class="loading">Analyzing resume...</div>';
+
+            try {
+                const response = await fetch(`${API_URL}/api/analyzer/${resumeId}`);
+                const result = await response.json();
+
+                const overallScore = result.overallScore || 0;
+                const overallColor = overallScore >= 70 ? '#28a745' : overallScore >= 50 ? '#ffc107' : '#dc3545';
+
+                document.getElementById('analyzeResult').innerHTML = `
+                        <div class="match-result">
+                            <div style="text-align: center; margin-bottom: 20px;">
+                                <div style="font-size: 3rem; font-weight: bold; color: ${overallColor};">${overallScore}%</div>
+                                <div style="color: #666;">Overall Quality Score</div>
+                            </div>
+                            <div class="stats-grid" style="margin: 15px 0; grid-template-columns: repeat(5, 1fr); gap: 10px;">
+                                <div class="stat-card" style="padding: 10px;">
+                                    <h4>Format</h4>
+                                    <p>${result.formatScore || 0}%</p>
+                                </div>
+                                <div class="stat-card" style="padding: 10px;">
+                                    <h4>Length</h4>
+                                    <p>${result.lengthScore || 0}%</p>
+                                </div>
+                                <div class="stat-card" style="padding: 10px;">
+                                    <h4>Skills</h4>
+                                    <p>${result.skillsScore || 0}%</p>
+                                </div>
+                                <div class="stat-card" style="padding: 10px;">
+                                    <h4>Experience</h4>
+                                    <p>${result.experienceScore || 0}%</p>
+                                </div>
+                                <div class="stat-card" style="padding: 10px;">
+                                    <h4>Education</h4>
+                                    <p>${result.educationScore || 0}%</p>
+                                </div>
+                            </div>
+                            <div class="keywords-section">
+                                <strong>💡 Improvement Suggestions:</strong>
+                                ${result.improvements && result.improvements.length > 0 ?
+                        result.improvements.map(imp => `<div class="suggestion">${imp}</div>`).join('') :
+                        '<div class="suggestion">✓ Your resume looks great! Keep it updated.</div>'}
+                            </div>
+                        </div>
+                    `;
+            } catch (error) {
+                document.getElementById('analyzeResult').innerHTML = `<div class="match-result" style="color: red;">Error: ${error.message}</div>`;
+            }
+        }
+
+        async function loadJobs() {
+            try {
+                const response = await fetch(`${API_URL}/api/jobdescription`);
+                const jobs = await response.json();
+                if (jobs.length === 0) {
+                    document.getElementById('jobsList').innerHTML = '<p>No jobs created yet. Create your first job above!</p>';
+                    return;
+                }
+                document.getElementById('jobsList').innerHTML = jobs.map(job => `
+                        <div class="list-item" onclick="document.getElementById('jobId').value = ${job.id}">
+                            <h4>${job.title}</h4>
+                            <p>${job.company || 'N/A'} | ${job.location || 'Remote'}</p>
+                            <p style="font-size: 11px;">ID: ${job.id} | Created: ${new Date(job.createdAt).toLocaleDateString()}</p>
+                        </div>
+                    `).join('');
+            } catch (error) {
+                document.getElementById('jobsList').innerHTML = '<p>Error loading jobs. Make sure API is running.</p>';
+            }
+        }
+
+        async function loadResumes() {
+            try {
+                const response = await fetch(`${API_URL}/api/resume`);
+                const resumes = await response.json();
+                if (resumes.length === 0) {
+                    document.getElementById('resumesList').innerHTML = '<p>No resumes uploaded yet. Upload your first resume above!</p>';
+                    return;
+                }
+                document.getElementById('resumesList').innerHTML = resumes.map(resume => `
+                        <div class="list-item" onclick="document.getElementById('resumeId').value = ${resume.id}; document.getElementById('analyzeResumeId').value = ${resume.id};">
+                            <h4>${resume.fileName}</h4>
+                            <p>Uploaded: ${new Date(resume.uploadedAt).toLocaleString()}</p>
+                            <p style="font-size: 11px;">ID: ${resume.id}</p>
+                        </div>
+                    `).join('');
+            } catch (error) {
+                document.getElementById('resumesList').innerHTML = '<p>Error loading resumes. Make sure API is running.</p>';
+            }
+        }
+    </script>
+</body>
+</html>
