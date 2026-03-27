@@ -19,7 +19,7 @@ builder.Services.AddCors(options =>
 });
 
 builder.Services.AddDbContext<ATSDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+    options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 builder.Services.AddScoped<IResumeRepository, ResumeRepository>();
 builder.Services.AddScoped<IJobDescriptionRepository, JobDescriptionRepository>();
