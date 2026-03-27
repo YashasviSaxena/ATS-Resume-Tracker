@@ -385,18 +385,20 @@
             document.getElementById('matchResult').innerHTML = '<div class="loading">Calculating match...</div>';
             try {
                 const response = await fetch(`${API_URL}/api/matching/compare`, {
-                    method: 'POST', headers: { 'Content-Type': 'application/json' },
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ resumeId: parseInt(resumeId), jobId: parseInt(jobId) })
                 });
                 const result = await response.json();
-                const progress = (result.score / 100) * 314;
+                const percentageScore = (result.score * 100).toFixed(2);
+                const progress = (result.score * 100) * 3.14;
                 document.getElementById('matchResult').innerHTML = `
                         <div class="match-result">
                             <div class="score-circle"><svg viewBox="0 0 120 120">
                                 <circle cx="60" cy="60" r="50" class="score-bg" stroke="#e0e0e0"/>
                                 <circle cx="60" cy="60" r="50" class="score-progress" stroke="#667eea"
                                         stroke-dasharray="${progress} 314" stroke-dashoffset="0"/>
-                            </svg><div class="score-text">${result.score}%</div></div>
+                            </svg><div class="score-text">${percentageScore}%</div></div>
                             <div class="match-level ${result.matchLevel}">${result.matchLevel}</div>
                             <div class="keywords-section"><strong>Missing Keywords:</strong>
                                 <div class="keywords">${result.missingKeywords.map(k => `<span class="keyword missing">${k.replace(/_/g, ' ')}</span>`).join('') || '✓ All keywords matched!'}</div>
@@ -407,7 +409,9 @@
                                 <div class="keywords-section"><strong>Job Keywords:</strong><div class="keywords">${result.jobKeywords.slice(0, 20).map(k => `<span class="keyword">${k.replace(/_/g, ' ')}</span>`).join('')}</div></div>
                             </details>
                         </div>`;
-            } catch (error) { document.getElementById('matchResult').innerHTML = `<div style="color:red;">Error: ${error.message}</div>`; }
+            } catch (error) {
+                document.getElementById('matchResult').innerHTML = `<div style="color:red;">Error: ${error.message}</div>`;
+            }
         }
 
         async function analyzeResume() {
