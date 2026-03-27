@@ -41,4 +41,11 @@ app.UseHttpsRedirection();
 app.UseAuthorization();
 app.MapControllers();
 
+// Apply migrations automatically
+using (var scope = app.Services.CreateScope())
+{
+    var dbContext = scope.ServiceProvider.GetRequiredService<ATSDbContext>();
+    dbContext.Database.EnsureCreated(); // Creates database and tables if not exists
+}
+
 app.Run();
