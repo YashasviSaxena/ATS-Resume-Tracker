@@ -133,6 +133,15 @@
             border-radius: 10px;
         }
 
+        .success-result {
+            margin-top: 20px;
+            padding: 20px;
+            background: #d4edda;
+            border-radius: 10px;
+            color: #155724;
+            border-left: 4px solid #28a745;
+        }
+
         .score-circle {
             width: 150px;
             height: 150px;
@@ -255,6 +264,31 @@
                 font-size: 12px;
             }
 
+        .info-text {
+            font-size: 12px;
+            color: #666;
+            margin-top: 5px;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: bold;
+            margin-right: 5px;
+        }
+
+        .badge-success {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .badge-info {
+            background: #d1ecf1;
+            color: #0c5460;
+        }
+
         @media (max-width: 768px) {
             .main-grid {
                 grid-template-columns: 1fr;
@@ -351,9 +385,16 @@
             try {
                 const response = await fetch(`${API_URL}/api/resume/upload`, { method: 'POST', body: formData });
                 const result = await response.json();
-                document.getElementById('uploadResult').innerHTML = `<pre class="match-result">${JSON.stringify(result, null, 2)}</pre>`;
+                document.getElementById('uploadResult').innerHTML = `
+                        <div class="success-result">
+                            <strong>✅ Resume Uploaded Successfully!</strong><br><br>
+                            <span class="badge badge-success">ID: ${result.id}</span>
+                            <span class="badge badge-info">${result.fileName}</span><br><br>
+                            <strong>📄 Extracted Text Preview:</strong><br>
+                            <span style="font-size: 13px;">${result.extractedText.substring(0, 300)}...</span>
+                        </div>`;
                 loadResumes(); loadStatistics();
-            } catch (error) { document.getElementById('uploadResult').innerHTML = `<div style="color:red;">Error: ${error.message}</div>`; }
+            } catch (error) { document.getElementById('uploadResult').innerHTML = `<div style="color:red;">❌ Error: ${error.message}</div>`; }
         }
 
         async function createJob() {
@@ -371,11 +412,19 @@
                     body: JSON.stringify(job)
                 });
                 const result = await response.json();
-                document.getElementById('jobResult').innerHTML = `<pre class="match-result">${JSON.stringify(result, null, 2)}</pre>`;
+                document.getElementById('jobResult').innerHTML = `
+                        <div class="success-result">
+                            <strong>✅ Job Created Successfully!</strong><br><br>
+                            <span class="badge badge-success">ID: ${result.id}</span>
+                            <span class="badge badge-info">${result.title}</span>
+                            <span class="badge badge-info">${result.company || 'N/A'}</span><br><br>
+                            <strong>📍 Location:</strong> ${result.location || 'Remote'}<br>
+                            <strong>📅 Created:</strong> ${new Date(result.createdAt).toLocaleString()}
+                        </div>`;
                 document.getElementById('jobTitle').value = ''; document.getElementById('jobDesc').value = '';
                 document.getElementById('jobCompany').value = ''; document.getElementById('jobLocation').value = '';
                 loadJobs(); loadStatistics();
-            } catch (error) { document.getElementById('jobResult').innerHTML = `<div style="color:red;">Error: ${error.message}</div>`; }
+            } catch (error) { document.getElementById('jobResult').innerHTML = `<div style="color:red;">❌ Error: ${error.message}</div>`; }
         }
 
         async function match() {
@@ -392,25 +441,59 @@
                 const result = await response.json();
                 const percentageScore = (result.score * 100).toFixed(2);
                 const progress = (result.score * 100) * 3.14;
+
+                let matchMessage = '';
+                if (result.matchLevel === 'Excellent') matchMessage = '🎉 Excellent match! Your resume aligns perfectly with this role.';
+                else if (result.matchLevel === 'Good') matchMessage = '👍 Good match! Your skills align well with most requirements.';
+                else if (result.matchLevel === 'Fair') matchMessage = '📊 Fair match. Some skills match, but improvements needed.';
+                else matchMessage = '⚠️ Poor match. Your resume needs significant improvement for this role.';
+
                 document.getElementById('matchResult').innerHTML = `
                         <div class="match-result">
-                            <div class="score-circle"><svg viewBox="0 0 120 120">
-                                <circle cx="60" cy="60" r="50" class="score-bg" stroke="#e0e0e0"/>
-                                <circle cx="60" cy="60" r="50" class="score-progress" stroke="#667eea"
-                                        stroke-dasharray="${progress} 314" stroke-dashoffset="0"/>
-                            </svg><div class="score-text">${percentageScore}%</div></div>
-                            <div class="match-level ${result.matchLevel}">${result.matchLevel}</div>
-                            <div class="keywords-section"><strong>Missing Keywords:</strong>
-                                <div class="keywords">${result.missingKeywords.map(k => `<span class="keyword missing">${k.replace(/_/g, ' ')}</span>`).join('') || '✓ All keywords matched!'}</div>
+                            <div class="score-circle">
+                                <svg viewBox="0 0 120 120">
+                                    <circle cx="60" cy="60" r="50" class="score-bg" stroke="#e0e0e0"/>
+                                    <circle cx="60" cy="60" r="50" class="score-progress" stroke="#667eea"
+                                            stroke-dasharray="${progress} 314" stroke-dashoffset="0"/>
+                                </svg>
+                                <div class="score-text">${percentageScore}%</div>
                             </div>
-                            <div class="keywords-section"><strong>Suggestions:</strong>${result.suggestions.map(s => `<div class="suggestion">${s}</div>`).join('')}</div>
-                            <details><summary>View Detailed Keywords</summary>
-                                <div class="keywords-section"><strong>Your Keywords:</strong><div class="keywords">${result.resumeKeywords.slice(0, 20).map(k => `<span class="keyword">${k.replace(/_/g, ' ')}</span>`).join('')}</div></div>
-                                <div class="keywords-section"><strong>Job Keywords:</strong><div class="keywords">${result.jobKeywords.slice(0, 20).map(k => `<span class="keyword">${k.replace(/_/g, ' ')}</span>`).join('')}</div></div>
+                            <div class="match-level ${result.matchLevel}">${result.matchLevel}</div>
+                            <div class="info-text" style="text-align: center; margin-bottom: 15px;">${matchMessage}</div>
+
+                            ${result.missingKeywords && result.missingKeywords.length > 0 ? `
+                            <div class="keywords-section">
+                                <strong>❌ Missing Keywords (${result.missingKeywords.length}):</strong>
+                                <div class="keywords">
+                                    ${result.missingKeywords.slice(0, 15).map(k => `<span class="keyword missing">${k.replace(/_/g, ' ')}</span>`).join('')}
+                                </div>
+                                <div class="info-text">💡 Add these keywords to your resume to improve your match score.</div>
+                            </div>
+                            ` : '<div class="keywords-section"><strong>✅ All keywords matched! Great job!</strong></div>'}
+
+                            <div class="keywords-section">
+                                <strong>💡 Suggestions to Improve:</strong>
+                                ${result.suggestions && result.suggestions.length > 0 ? result.suggestions.slice(0, 5).map(s => `<div class="suggestion">${s}</div>`).join('') : '<div class="suggestion">No suggestions available.</div>'}
+                            </div>
+
+                            <details>
+                                <summary>🔍 View Detailed Keyword Analysis</summary>
+                                <div class="keywords-section">
+                                    <strong>📄 Your Resume Keywords (Top 20):</strong>
+                                    <div class="keywords">
+                                        ${result.resumeKeywords && result.resumeKeywords.length > 0 ? result.resumeKeywords.slice(0, 20).map(k => `<span class="keyword">${k.replace(/_/g, ' ')}</span>`).join('') : 'No keywords found'}
+                                    </div>
+                                </div>
+                                <div class="keywords-section">
+                                    <strong>💼 Job Keywords (Top 20):</strong>
+                                    <div class="keywords">
+                                        ${result.jobKeywords && result.jobKeywords.length > 0 ? result.jobKeywords.slice(0, 20).map(k => `<span class="keyword">${k.replace(/_/g, ' ')}</span>`).join('') : 'No keywords found'}
+                                    </div>
+                                </div>
                             </details>
                         </div>`;
             } catch (error) {
-                document.getElementById('matchResult').innerHTML = `<div style="color:red;">Error: ${error.message}</div>`;
+                document.getElementById('matchResult').innerHTML = `<div style="color:red;">❌ Error: ${error.message}</div>`;
             }
         }
 
@@ -421,36 +504,58 @@
             try {
                 const response = await fetch(`${API_URL}/api/analyzer/${resumeId}`);
                 const result = await response.json();
-                document.getElementById('analyzeResult').innerHTML = `<pre class="match-result">${JSON.stringify(result, null, 2)}</pre>`;
-            } catch (error) { document.getElementById('analyzeResult').innerHTML = `<div style="color:red;">Error: ${error.message}</div>`; }
+                const overallScore = result.overallScore || 0;
+                const overallColor = overallScore >= 70 ? '#28a745' : overallScore >= 50 ? '#ffc107' : '#dc3545';
+
+                document.getElementById('analyzeResult').innerHTML = `
+                        <div class="match-result">
+                            <div style="text-align: center; margin-bottom: 20px;">
+                                <div style="font-size: 3rem; font-weight: bold; color: ${overallColor};">${overallScore}%</div>
+                                <div style="color: #666;">Overall Quality Score</div>
+                            </div>
+                            <div class="stats-grid" style="margin: 15px 0; grid-template-columns: repeat(5, 1fr); gap: 10px;">
+                                <div class="stat-card" style="padding: 10px;"><h4>Format</h4><p>${result.formatScore || 0}%</p></div>
+                                <div class="stat-card" style="padding: 10px;"><h4>Length</h4><p>${result.lengthScore || 0}%</p></div>
+                                <div class="stat-card" style="padding: 10px;"><h4>Skills</h4><p>${result.skillsScore || 0}%</p></div>
+                                <div class="stat-card" style="padding: 10px;"><h4>Experience</h4><p>${result.experienceScore || 0}%</p></div>
+                                <div class="stat-card" style="padding: 10px;"><h4>Education</h4><p>${result.educationScore || 0}%</p></div>
+                            </div>
+                            <div class="keywords-section">
+                                <strong>💡 Improvement Suggestions:</strong>
+                                ${result.improvements && result.improvements.length > 0 ?
+                        result.improvements.map(imp => `<div class="suggestion">${imp}</div>`).join('') :
+                        '<div class="suggestion">✓ Your resume looks great! Keep it updated.</div>'}
+                            </div>
+                        </div>`;
+            } catch (error) { document.getElementById('analyzeResult').innerHTML = `<div style="color:red;">❌ Error: ${error.message}</div>`; }
         }
 
         async function loadJobs() {
             try {
                 const response = await fetch(`${API_URL}/api/jobdescription`);
                 const jobs = await response.json();
-                if (jobs.length === 0) { document.getElementById('jobsList').innerHTML = '<p>No jobs created yet.</p>'; return; }
+                if (jobs.length === 0) { document.getElementById('jobsList').innerHTML = '<p>📭 No jobs created yet. Create your first job above!</p>'; return; }
                 document.getElementById('jobsList').innerHTML = jobs.map(job => `
                         <div class="list-item" onclick="document.getElementById('jobId').value = ${job.id}">
                             <h4>${job.title}</h4>
-                            <p>${job.company || 'N/A'} | ${job.location || 'Remote'}</p>
-                            <p style="font-size: 11px;">ID: ${job.id}</p>
+                            <p>🏢 ${job.company || 'N/A'} | 📍 ${job.location || 'Remote'}</p>
+                            <p class="info-text">🆔 ID: ${job.id} | 📅 ${new Date(job.createdAt).toLocaleDateString()}</p>
                         </div>`).join('');
-            } catch (error) { document.getElementById('jobsList').innerHTML = '<p>Error loading jobs. Make sure API is running.</p>'; }
+            } catch (error) { document.getElementById('jobsList').innerHTML = '<p>❌ Error loading jobs. Make sure API is running.</p>'; }
         }
 
         async function loadResumes() {
             try {
                 const response = await fetch(`${API_URL}/api/resume`);
                 const resumes = await response.json();
-                if (resumes.length === 0) { document.getElementById('resumesList').innerHTML = '<p>No resumes uploaded yet.</p>'; return; }
+                if (resumes.length === 0) { document.getElementById('resumesList').innerHTML = '<p>📭 No resumes uploaded yet. Upload your first resume above!</p>'; return; }
                 document.getElementById('resumesList').innerHTML = resumes.map(resume => `
                         <div class="list-item" onclick="document.getElementById('resumeId').value = ${resume.id}; document.getElementById('analyzeResumeId').value = ${resume.id};">
-                            <h4>${resume.fileName}</h4>
-                            <p>Uploaded: ${new Date(resume.uploadedAt).toLocaleString()}</p>
-                            <p style="font-size: 11px;">ID: ${resume.id}</p>
+                            <h4>📄 ${resume.fileName}</h4>
+                            <p>📅 Uploaded: ${new Date(resume.uploadedAt).toLocaleString()}</p>
+                            <p class="info-text">🆔 ID: ${resume.id}</p>
                         </div>`).join('');
-            } catch (error) { document.getElementById('resumesList').innerHTML = '<p>Error loading resumes. Make sure API is running.</p>'; }
+            } catch (error) { document.getElementById('resumesList').innerHTML = '<p>❌ Error loading resumes. Make sure API is running.</p>'; }
         }
 
         loadStatistics(); loadJobs(); loadResumes();
