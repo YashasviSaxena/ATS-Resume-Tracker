@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -274,7 +274,7 @@
 <body>
     <div class="container">
         <div class="header">
-            <h1>📄 ATS Resume Tracker</h1>
+            <h1>?? ATS Resume Tracker</h1>
             <p>Intelligent Resume Matching System with AI-Powered Analysis</p>
         </div>
 
@@ -301,7 +301,7 @@
         <div class="main-grid">
             <!-- Upload Resume -->
             <div class="card">
-                <h2>📤 Upload Resume</h2>
+                <h2>?? Upload Resume</h2>
                 <input type="file" id="resumeFile" accept=".pdf,.txt">
                 <button onclick="uploadResume()">Upload Resume</button>
                 <div id="uploadResult"></div>
@@ -309,7 +309,7 @@
 
             <!-- Create Job -->
             <div class="card">
-                <h2>💼 Create Job Posting</h2>
+                <h2>?? Create Job Posting</h2>
                 <input type="text" id="jobTitle" placeholder="Job Title">
                 <textarea id="jobDesc" placeholder="Job Description (skills required, responsibilities...)"></textarea>
                 <input type="text" id="jobCompany" placeholder="Company Name">
@@ -321,7 +321,7 @@
 
         <!-- Match Section -->
         <div class="card" style="margin-bottom: 30px;">
-            <h2>🎯 Match Resume with Job</h2>
+            <h2>?? Match Resume with Job</h2>
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
                 <input type="number" id="resumeId" placeholder="Resume ID">
                 <input type="number" id="jobId" placeholder="Job ID">
@@ -332,7 +332,7 @@
 
         <!-- Resume Analyzer Section -->
         <div class="card" style="margin-bottom: 30px;">
-            <h2>📊 Resume Quality Analyzer</h2>
+            <h2>?? Resume Quality Analyzer</h2>
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
                 <input type="number" id="analyzeResumeId" placeholder="Resume ID">
                 <button onclick="analyzeResume()">Analyze Resume</button>
@@ -343,14 +343,14 @@
         <div class="main-grid">
             <!-- Jobs List -->
             <div class="card">
-                <h2>📋 Job Openings</h2>
+                <h2>?? Job Openings</h2>
                 <button onclick="loadJobs()" style="margin-bottom: 15px;">Refresh Jobs</button>
                 <div id="jobsList"></div>
             </div>
 
             <!-- Resumes List -->
             <div class="card">
-                <h2>📄 Uploaded Resumes</h2>
+                <h2>?? Uploaded Resumes</h2>
                 <button onclick="loadResumes()" style="margin-bottom: 15px;">Refresh Resumes</button>
                 <div id="resumesList"></div>
             </div>
@@ -405,7 +405,7 @@
                 const result = await response.json();
                 document.getElementById('uploadResult').innerHTML = `
                         <div class="match-result">
-                            ✅ Resume uploaded successfully!<br>
+                            ? Resume uploaded successfully!<br>
                             <strong>ID:</strong> ${result.id}<br>
                             <strong>File:</strong> ${result.fileName}<br>
                             <strong>Extracted Text:</strong> ${result.extractedText.substring(0, 200)}...
@@ -442,7 +442,7 @@
                 const result = await response.json();
                 document.getElementById('jobResult').innerHTML = `
                         <div class="match-result">
-                            ✅ Job created successfully!<br>
+                            ? Job created successfully!<br>
                             <strong>ID:</strong> ${result.id}<br>
                             <strong>Title:</strong> ${result.title}<br>
                             <strong>Company:</strong> ${result.company}
@@ -491,7 +491,7 @@
                             <div class="keywords-section">
                                 <strong>Missing Keywords:</strong>
                                 <div class="keywords">
-                                    ${result.missingKeywords.map(k => `<span class="keyword missing">${k.replace(/_/g, ' ')}</span>`).join('') || '✓ All keywords matched!'}
+                                    ${result.missingKeywords.map(k => `<span class="keyword missing">${k.replace(/_/g, ' ')}</span>`).join('') || '? All keywords matched!'}
                                 </div>
                             </div>
                             <div class="keywords-section">
@@ -562,10 +562,10 @@
                                 </div>
                             </div>
                             <div class="keywords-section">
-                                <strong>💡 Improvement Suggestions:</strong>
+                                <strong>?? Improvement Suggestions:</strong>
                                 ${result.improvements && result.improvements.length > 0 ?
                         result.improvements.map(imp => `<div class="suggestion">${imp}</div>`).join('') :
-                        '<div class="suggestion">✓ Your resume looks great! Keep it updated.</div>'}
+                        '<div class="suggestion">? Your resume looks great! Keep it updated.</div>'}
                             </div>
                         </div>
                     `;
